@@ -3,5 +3,14 @@ connect sys/"S1sPassword1!"@cdb1 as sysdba
 alter user sysdg identified by oracle account unlock;
 grant sysdg to sysdg;
 
+
+
 connect sys/"S1sPassword1!"@cdb1_stby as sysdba
+alter database recover managed standby database cancel;
 alter database flashback on;
+alter database recover managed standby database disconnect;
+
+
+
+
+sudo timedatectl set-timezone America/Halifax
