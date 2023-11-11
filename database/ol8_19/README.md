@@ -15,7 +15,7 @@ A simple Vagrant build for Oracle Database 19c on Oracle Linux 8.
 
 If you want to patch the installation, you will also need these downloads.
 
-* [Patch 32900021: COMBO OF OJVM RU COMPONENT 19.12.0.0.210720 + DB RU 19.12.0.0.210720](https://support.oracle.com)
+* [Patch 35742413: COMBO OF OJVM RU COMPONENT 19.21.0.0.231017 + DB RU 19.21.0.0.231017](https://support.oracle.com)
 * [Patch 6880880: OPatch 19.x](https://updates.oracle.com/download/6880880.html)
 
 Place the software in the "software" directory before calling the `vagrant up` command.
@@ -63,3 +63,4 @@ With everything in place, you can initiate the build as follows.
 cd C:\git\oraclebase\vagrant\database\ol8_19\
 vagrant up
 ```
+

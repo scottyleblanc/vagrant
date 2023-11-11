@@ -1,5 +1,8 @@
 . /vagrant/config/install.env
 
+
+timedatectl set-timezone America/Halifax
+
 sh /vagrant/scripts/prepare_disks.sh
 
 sh /vagrant/scripts/install_os_packages.sh

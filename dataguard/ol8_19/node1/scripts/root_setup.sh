@@ -34,3 +34,4 @@ if [ "${PATCH_DB}" = "true" ]; then
 fi
 
 su - oracle -c 'sh /vagrant/scripts/oracle_create_database.sh'
+
