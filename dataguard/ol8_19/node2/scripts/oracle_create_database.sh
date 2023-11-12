@@ -69,7 +69,7 @@ cat > ${ORACLE_HOME}/network/admin/sqlnet.ora <<EOF
 SQLNET.INBOUND_CONNECT_TIMEOUT=400
 EOF
 
-# Adding the Native Network Encryption was suggested by Claudia Hüffer, Peter Wahl and Richard Evans.
+# Adding the Native Network Encryption was suggested by Claudia Hï¿½ffer, Peter Wahl and Richard Evans.
 # I've made it optional.
 if [ "${NATIVE_NETWORK_ENCRYPTION}" = "true" ]; then
   cat >> ${ORACLE_HOME}/network/admin/sqlnet.ora <<EOF
@@ -142,6 +142,19 @@ DUPLICATE TARGET DATABASE
 exit;
 EOF
 
+# Enable flashback on the standby so it can be reinstated after failover, when it is a primary
+echo "******************************************************************************"
+echo "Enable flashback on the standby." `date`
+echo "******************************************************************************"
+sqlplus / as sysdba <<EOF
+
+alter database recover managed standby database cancel;
+alter database flashback on;
+alter database recover managed standby database disconnect;
+
+EXIT;
+EOF
+
 echo "******************************************************************************"
 echo "Enable the broker." `date`
 echo "******************************************************************************"
@@ -151,7 +164,6 @@ ALTER SYSTEM SET dg_broker_start=true;
 
 EXIT;
 EOF
-
 
 echo "******************************************************************************"
 echo "Configure broker (on primary) and display configuration." `date`
@@ -170,7 +182,7 @@ EOF
 echo "******************************************************************************"
 echo "Validate configuration." `date`
 echo "******************************************************************************"
-# Adding the validation step was suggested by Claudia Hüffer, Peter Wahl and Richard Evans.
+# Adding the validation step was suggested by Claudia Hï¿½ffer, Peter Wahl and Richard Evans.
 sleep 60
 dgmgrl sys/${SYS_PASSWORD}@${NODE1_DB_UNIQUE_NAME} <<EOF
 VALIDATE DATABASE ${NODE1_DB_UNIQUE_NAME};

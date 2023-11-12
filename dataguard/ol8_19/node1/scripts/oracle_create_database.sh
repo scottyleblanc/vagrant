@@ -172,6 +172,7 @@ ALTER DATABASE ADD STANDBY LOGFILE THREAD 1 GROUP 13 ('${DATA_DIR}/${ORACLE_SID^
 ALTER DATABASE FLASHBACK ON;
 
 ALTER SYSTEM SET STANDBY_FILE_MANAGEMENT=AUTO;
+
 EXIT;
 EOF
 
@@ -186,3 +187,17 @@ ALTER SYSTEM SET dg_broker_start=TRUE;
 
 EXIT;
 EOF
+
+
+echo "******************************************************************************"
+echo "Setup SYSDG user account." `date`
+echo "******************************************************************************"
+sqlplus / as sysdba <<EOF
+
+alter user sysdg identified by ${SYSDG_PASSWORD} account unlock;
+grant sysdg to sysdg;
+
+
+EXIT;
+EOF
+
