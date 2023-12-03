@@ -1,11 +1,7 @@
 
--- -----------------------------------------------------------------------------
--- File Name:   : createDB.sh
--- -----------------------------------------------------------------------------
-
--- -----------------------------------------------------------------------------
--- 
--- -----------------------------------------------------------------------------
+# -- -----------------------------------------------------------------------------
+# -- File Name:   : createDB.sh
+# -- -----------------------------------------------------------------------------
 
 export ORACLE_BASE=/u01/app/oracle
 export ORA_INVENTORY=/u01/app/oraInventory
@@ -57,6 +53,7 @@ echo "**************************************************************************
 sqlplus / as sysdba <<EOF
 ALTER SYSTEM SET db_create_file_dest='${DATA_DIR}';
 ALTER SYSTEM SET db_create_online_log_dest_1='${DATA_DIR}';
+ALTER PLUGGABLE DATABASE ${PDB_NAME} OPEN;
 ALTER PLUGGABLE DATABASE ${PDB_NAME} SAVE STATE;
 ALTER SYSTEM RESET local_listener;
 exit;
@@ -82,4 +79,27 @@ ALTER DATABASE OPEN;
 ALTER DATABASE FORCE LOGGING;
 -- Make sure at least one logfile is present.
 ALTER SYSTEM SWITCH LOGFILE;
+exit;
+EOF
+
+echo "******************************************************************************"
+echo "Create an RMAN catalog." `date`
+echo "******************************************************************************"
+
+sqlplus / as sysdba <<EOF
+alter session set container=rman;
+
+create tablespace rmancatalog datafile '/u01/oradata/CDB2/rman/rmancatalog.dbf'
+size 32M autoextend on next 64k;
+
+create user rmancatalog identified by rmancatalog;
+alter user rmancatalog default tablespace rmancatalog;
+alter user rmancatalog temporary tablespace temp;
+-- -----------------------------------------------------------------------------
+--  RMANCATALOG requires the following grants
+-- -----------------------------------------------------------------------------
+alter user rmancatalog quota unlimited on rmancatalog;
+grant RECOVERY_CATALOG_OWNER to rmancatalog;
+grant create session to rmancatalog;
+exit;
 EOF

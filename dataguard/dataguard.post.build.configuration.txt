@@ -1,16 +1,75 @@
+-- change the timezone
+sudo timedatectl set-timezone America/Halifax
+
+-- scp .bashrc from host to /home/oracle
+
+-- Node1
+-- create bin and copy utilities / scripts
+mkdir /home/oracle/bin
+StartAll.sh
+chmod +x /home/oracle/bin/startAll.sh
+
+-- Node2
+-- create bin and copy utilities / scripts
+mkdir /home/oracle/bin
+chmod +x /home/oracle/bin/startAll.sh
+
+
+
 -- changes to make post build 
 connect sys/"S1sPassword1!"@cdb1 as sysdba
+
+/* this should be done, after next build
 alter user sysdg identified by oracle account unlock;
 grant sysdg to sysdg;
-
+*/
 
 
 connect sys/"S1sPassword1!"@cdb1_stby as sysdba
+/* this should be done, after next build
 alter database recover managed standby database cancel;
 alter database flashback on;
 alter database recover managed standby database disconnect;
+*/
 
 
 
+/* this should be done, after next build
+create tablespace rmancatalog datafile '/u01/oradata/CDB2/rman/rmancatalog.dbf'
+size 32M autoextend on next 64k;
 
-sudo timedatectl set-timezone America/Halifax
+create user rmancatalog identified by rmancatalog;
+alter user rmancatalog default tablespace rmancatalog;
+alter user rmancatalog temporary tablespace temp;
+-- -----------------------------------------------------------------------------
+--  RMANCATALOG requires the following grants
+-- -----------------------------------------------------------------------------
+alter user rmancatalog quota unlimited on rmancatalog;
+grant RECOVERY_CATALOG_OWNER to rmancatalog;
+grant create session to rmancatalog;
+*/
+
+
+-- -----------------------------------------------------------------------------
+--  connect to RMAN as the catalog owner and create the catalog
+-- -----------------------------------------------------------------------------
+rman catalog=rmancatalog/rmancatalog@RMAN
+create catalog;
+
+
+CONFIGURE CONTROLFILE AUTOBACKUP ON FOR DB_UNIQUE_NAME CDB1;
+CONFIGURE RETENTION POLICY TO RECOVERY WINDOW OF 2 DAYS;
+CONFIGURE ARCHIVELOG DELETION POLICY TO APPLIED ON ALL STANDBY;
+CONFIGURE DB_UNIQUE_NAME cdb1 CONNECT IDENTIFIER 'cdb1';
+CONFIGURE DB_UNIQUE_NAME cdb1_stby CONNECT IDENTIFIER 'cdb1_stby';
+
+
+RESYNC CATALOG FROM DB_UNIQUE_NAME ALL;
+RECOVER COPY OF DATABASE WITH TAG 'dgbkup';
+BACKUP DEVICE TYPE DISK INCREMENTAL LEVEL 1 FOR RECOVER
+OF COPY WITH TAG 'dgbkup' DATABASE;
+BACKUP DEVICE TYPE SBT ARCHIVELOG ALL;
+BACKUP BACKUPSET ALL;
+DELETE NOPROMPT ARCHIVELOG ALL;
+
+
